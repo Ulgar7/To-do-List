@@ -1,153 +1,190 @@
-// Elementos del DOM
-const form = document.getElementById("task-form");
-const input = document.getElementById("task-input");
-const list = document.getElementById("task-list");
+// ========== Tipos ==========
+type TaskId = string;
+type Task = {
+  id: TaskId;
+  text: string;
+  done: boolean;
+  createdAt: number;
+};
 
+type Filter = "todas" | "completadas" | "pendientes";
 
-const filtroSelect = document.getElementById("filtro");
-let filtroActual = "todas";
+// ========== DOM tipado (con genéricos en querySelector) ==========
+const form = document.querySelector<HTMLFormElement>("#task-form")!;
+const input = document.querySelector<HTMLInputElement>("#task-input")!;
+const list = document.querySelector<HTMLUListElement>("#task-list")!;
+const filtroSelect = document.querySelector<HTMLSelectElement>("#filtro")!;
+const btnBorrarTodo = document.querySelector<HTMLButtonElement>("#borrar-todo")!;
+const contador = document.querySelector<HTMLDivElement>("#contador-tareas")!;
 
+// Si querés evitar el "!" y ser 100% seguro:
+// if (!form || !input || !list || !filtroSelect || !btnBorrarTodo || !contador) {
+//   throw new Error("Faltan elementos en el DOM");
+// }
 
+// ========== Storage ==========
+const STORAGE_KEY = "tasks";
 
-// Cargar tareas desde localStorage al iniciar
-document.addEventListener("DOMContentLoaded", () => {
-  renderizarTodasLasTareas();
-  actualizarEstado();
-});
-
-
-function renderizarTodasLasTareas() {
-  list.innerHTML = ""; // Borramos todo lo visible
-
-  const tareasGuardadas = JSON.parse(localStorage.getItem("tareas")) || [];
-  tareasGuardadas.forEach(tarea => renderizarTarea(tarea));
+function loadTasks(): Task[] {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    const data: unknown = JSON.parse(raw);
+    if (!Array.isArray(data)) return [];
+    // Luego validamos con Zod; por ahora casteo suave:
+    return data as Task[];
+  } catch {
+    return [];
+  }
 }
 
+function saveTasks(tasks: Task[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
 
-// Función para renderizar una tarea en la lista
-function renderizarTarea(tarea) {
+// ========== Estado ==========
+let tasks: Task[] = loadTasks();
+let currentFilter: Filter = "todas";
+
+// ========== Mutadores ==========
+function addTask(text: string): Task {
+  const t: Task = {
+    id: crypto.randomUUID(),
+    text,
+    done: false,
+    createdAt: Date.now(),
+  };
+  tasks = [t, ...tasks];
+  saveTasks(tasks);
+  return t;
+}
+
+function toggleTask(id: TaskId): void {
+  tasks = tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+  saveTasks(tasks);
+}
+
+function updateTaskText(id: TaskId, newText: string): void {
+  tasks = tasks.map((t) => (t.id === id ? { ...t, text: newText } : t));
+  saveTasks(tasks);
+}
+
+function deleteTask(id: TaskId): void {
+  tasks = tasks.filter((t) => t.id !== id);
+  saveTasks(tasks);
+}
+
+function clearAll(): void {
+  tasks = [];
+  saveTasks(tasks);
+}
+
+// ========== Filtro / Visibilidad ==========
+function getVisibleTasks(): Task[] {
+  switch (currentFilter) {
+    case "completadas":
+      return tasks.filter((t) => t.done);
+    case "pendientes":
+      return tasks.filter((t) => !t.done);
+    default:
+      return tasks;
+  }
+}
+
+// ========== Render ==========
+function renderList(): void {
+  list.innerHTML = "";
+  for (const t of getVisibleTasks()) {
+    list.appendChild(renderItem(t));
+  }
+  renderCounter();
+}
+
+function renderItem(t: Task): HTMLLIElement {
   const li = document.createElement("li");
-  const spanTexto = document.createElement("span");
-  spanTexto.textContent = tarea.texto;
-  li.appendChild(spanTexto);
+  if (t.done) li.classList.add("done");
 
-  // Edicion de Texto
-  spanTexto.addEventListener("dblclick", (e) => {
-    
-    
-  const inputEdicion = document.createElement("input");
-  inputEdicion.type = "text";
-  inputEdicion.value = tarea.texto;
-  inputEdicion.classList.add("editar-input");
-
-  li.replaceChild(inputEdicion, spanTexto);
-  inputEdicion.focus();
-
-  const guardarCambios = () => {
-    const nuevoTexto = inputEdicion.value.trim();
-    if (nuevoTexto !== "") {
-      tarea.texto = nuevoTexto;
-      spanTexto.textContent = nuevoTexto;
-    }
-    li.replaceChild(spanTexto, inputEdicion);
-    actualizarEstado();
-  };
-
-  inputEdicion.addEventListener("blur", guardarCambios);
-  inputEdicion.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      guardarCambios();
-    }
-  });
-});
-
-
-  li.classList.toggle("completada", tarea.completada);
-
-  // Marcar como completada al hacer clic
-  li.addEventListener("click", (e) => {
-    if(li.querySelector("input"))return;
-
-    li.classList.toggle("completada");
-    actualizarEstado();
+  // Checkbox
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = t.done;
+  checkbox.addEventListener("change", () => {
+    toggleTask(t.id);
+    renderList(); // simple y efectivo
   });
 
-  // Botón eliminar
-  const botonEliminar = document.createElement("button");
-  botonEliminar.textContent = "✖";
-  botonEliminar.classList.add("eliminar");
-  botonEliminar.addEventListener("click", (e) => {
-    e.stopPropagation(); // para que no se active el toggle de completado
-    li.remove();
-    actualizarEstado();
-  });
+  // Texto (editable con doble click)
+  const span = document.createElement("span");
+  span.textContent = t.text;
+  span.title = "Doble click para editar";
 
-  li.appendChild(botonEliminar);
+  span.addEventListener("dblclick", (_e: MouseEvent) => {
+    const inputEdit = document.createElement("input");
+    inputEdit.type = "text";
+    inputEdit.value = t.text;
+    inputEdit.classList.add("editar-input");
 
+    const save = (): void => {
+      const nuevo = inputEdit.value.trim();
+      if (nuevo && nuevo !== t.text) {
+        updateTaskText(t.id, nuevo);
+      }
+      renderList();
+    };
 
-  // Filtrar visibilidad según filtro
-if (
-  (filtroActual === "completadas" && !tarea.completada) ||
-  (filtroActual === "pendientes" && tarea.completada)
-) {
-  li.style.display = "none";
-}
-
-  list.appendChild(li);
-}
-
-
-
-// Escuchar el envío del formulario
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  const texto = input.value.trim();
-  if (texto === "") return;
-
-  const nuevaTarea = {
-    texto,
-    completada: false
-  };
-
-  renderizarTarea(nuevaTarea);
-  actualizarEstado();
-  input.value = "";
-});
-
-// Actualizar localStorage con las tareas actuales
-function actualizarEstado() {
-  const tareas = [];
-  list.querySelectorAll("li").forEach(li => {
-    tareas.push({
-      texto: li.childNodes[0].textContent,
-      completada: li.classList.contains("completada")
+    inputEdit.addEventListener("keydown", (ke: KeyboardEvent) => {
+      if (ke.key === "Enter") save();
+      if (ke.key === "Escape") renderList();
     });
+    inputEdit.addEventListener("blur", save);
+
+    li.replaceChild(inputEdit, span);
+    inputEdit.focus();
+    inputEdit.setSelectionRange(inputEdit.value.length, inputEdit.value.length);
   });
 
-  localStorage.setItem("tareas", JSON.stringify(tareas));
+  // Botón borrar
+  const delBtn = document.createElement("button");
+  delBtn.type = "button";
+  delBtn.textContent = "Eliminar";
+  delBtn.addEventListener("click", () => {
+    deleteTask(t.id);
+    renderList();
+  });
 
-
-  // Actualizar contador de tareas
-  const tareasPendientes = tareas.filter(t => !t.completada).length;
-  const totalTareas = tareas.length;
-
-  const contador = document.getElementById("contador-tareas");
-  contador.textContent = `${tareasPendientes} ${tareasPendientes === 1 ? 'tarea pendiente' : 'tareas pendientes'} / ${totalTareas} en total`;
-
-
+  li.append(checkbox, span, delBtn);
+  return li;
 }
+
+function renderCounter(): void {
+  const total = tasks.length;
+  const pendientes = tasks.filter((t) => !t.done).length;
+  contador.textContent = `${pendientes} tareas pendientes / ${total} en total`;
+}
+
+// ========== Eventos ==========
+form.addEventListener("submit", (e: SubmitEvent) => {
+  e.preventDefault();
+  const value = input.value.trim();
+  if (!value) return;
+  addTask(value);
+  input.value = "";
+  renderList();
+});
+
 filtroSelect.addEventListener("change", () => {
-  filtroActual = filtroSelect.value;
-  renderizarTodasLasTareas();
+  // El value del <select> ya es "todas" | "completadas" | "pendientes"
+  // pero lo asertamos para que TS lo entienda como Filter:
+  currentFilter = filtroSelect.value as Filter;
+  renderList();
 });
 
-const botonBorrarTodo = document.getElementById("borrar-todo");
-
-botonBorrarTodo.addEventListener("click", () => {
-  const confirmar = confirm("¿Estás seguro de que querés borrar TODAS las tareas?");
-  if (!confirmar) return;
-
-  localStorage.removeItem("tareas");  // borramos del almacenamiento
-  list.innerHTML = "";               // limpiamos la lista en pantalla
+btnBorrarTodo.addEventListener("click", () => {
+  if (confirm("¿Borrar todas las tareas?")) {
+    clearAll();
+    renderList();
+  }
 });
+
+// ==========  ==========
+renderList();
