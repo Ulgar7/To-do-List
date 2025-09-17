@@ -1,0 +1,63 @@
+1. Botón para borrar todas las tareas
+Ideal para limpiar la lista de un saque.
+
+Podés poner un confirm() antes para no mandarse cagadas.
+
+2. Filtrar tareas: Todas / Completadas / Pendientes
+Tres botones o tabs que te permitan ver solo lo que querés.
+
+No borra nada, solo muestra u oculta según el estado.
+
+3. Contador de tareas
+Ej: 3 tareas pendientes / 5 totales.
+
+Es una boludez de hacer, pero suma visualmente y para UX.
+
+4. Editar tarea
+Hacés doble clic en el texto y se vuelve un input para editar.
+
+Al presionar Enter o hacer blur, se guarda el nuevo texto.
+
+5. Drag and Drop para ordenar
+Con una librería tipo SortableJS o con HTML Drag API.
+
+Para que puedas reordenar las tareas a gusto.
+
+6. Temas (claro/oscuro)
+Un toggle que cambie variables CSS --color-fondo, etc.
+
+Se guarda en localStorage.
+
+7. Animaciones suaves
+Fade-ins, transiciones al completar o borrar.
+
+Le da vida al sitio.
+
+8. Subtareas (checklist dentro de una tarea)
+Ideal si querés hacer una "tarea padre" con pasos adentro.
+
+Tipo:
+
+Comprar comida
+
+ Pan
+
+ Leche
+
+ Huevos
+
+🧠 IDEAS MÁS PICANTES / AVANZADAS
+9. Fechas límite y recordatorios
+Asignás una fecha y que te diga “Quedan X días”.
+
+Podés jugar con colores si está por vencerse (rojo, amarillo, verde).
+
+10. Sincronización con una cuenta
+Autenticación simple y guardado remoto (esto ya es otro level, tipo con Firebase).
+
+Para usar la lista en varias máquinas.
+
+11. Modo productividad / Pomodoro
+Integrás un temporizador para enfocarse en tareas.
+
+Muy bueno para rutinas de estudio o laburo.

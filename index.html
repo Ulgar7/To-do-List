@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>📋 Mi To-Do List</h1>
+
+    <form id="task-form">
+      <input 
+        type="text" 
+        id="task-input" 
+        placeholder="Agregá una nueva tarea..." 
+        autocomplete="off"
+      />
+      <button type="submit">Agregar</button>
+    </form>
+    <div id="filtros">
+  <label for="filtro">Filtrar:</label>
+  <select id="filtro">
+    <option value="todas">Todas</option>
+    <option value="completadas">Completadas</option>
+    <option value="pendientes">Pendientes</option>
+  </select>
+</div>  
+<button id="borrar-todo" class="borrar-todo">🧼 Borrar todas</button>
+<div id="contador-tareas">0 tareas pendientes / 0 en total</div>
+
+    <ul id="task-list"></ul>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
