@@ -1,0 +1,24 @@
+{
+  "name": "to-do-list",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ulgar7/To-do-List.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ulgar7/To-do-List/issues"
+  },
+  "homepage": "https://github.com/Ulgar7/To-do-List#readme",
+  "devDependencies": {
+    "@types/node": "^24.5.1",
+    "typescript": "^5.9.2"
+  }
+}
