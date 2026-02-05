@@ -7,14 +7,39 @@ const list = document.getElementById("task-list");
 const filtroSelect = document.getElementById("filtro");
 let filtroActual = "todas";
 
-
+const botonTema = document.getElementById("toggle-tema")
 
 // Cargar tareas desde localStorage al iniciar
 document.addEventListener("DOMContentLoaded", () => {
+  const temaGuardado = localStorage.getItem("tema")
+
+  if (temaGuardado === "dark") {
+    document.body.classList.add("dark")
+  }
+
+  actualizarIconoTema();
   renderizarTodasLasTareas();
   actualizarEstado();
 });
 
+botonTema.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+
+  const temaActual = document.body. classList.contains("dark")
+    ? "dark"
+    : "light";
+
+    localStorage.setItem("tema", temaActual)
+    actualizarIconoTema();
+}) 
+
+function actualizarIconoTema(){
+  if(document.body.classList.contains("dark")){
+    botonTema.textContent = "☀️ Cambiar tema" ;
+  }else{
+    botonTema.textContent = "🌙 Cambiar tema";
+  }
+}
 
 function renderizarTodasLasTareas() {
   list.innerHTML = ""; // Borramos todo lo visible

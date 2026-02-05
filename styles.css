@@ -175,3 +175,52 @@ button.eliminar {
   border: 1px solid var(--color-borde);
   border-radius: 5px;
 }
+
+#toggle-tema{
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+/* =====================
+DARK MODE 
+======================== */
+
+body.dark{
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.dark h1{
+  color: #f4a261
+}
+
+body.dark #task-input {
+  background-color: #ffffff;
+  color: #333;
+}
+
+body.dark #task.input::placeholder{
+  color: #777;
+}
+
+body.dark #task-list {
+  color: #1e1e1e;
+}
+
+body.dark button{
+  background-color: #f4a261;
+  color: #1e1e1e;
+}
+
+body.dark button:hover{
+  background-color: #e9964a;
+  color: #1e1e1e;
+}
+
+body.dark .borrar-todo{
+  background-color: #a94444;
+  color: #fff;
+}
+
