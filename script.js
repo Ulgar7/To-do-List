@@ -55,6 +55,7 @@ function renderizarTarea(tarea) {
   const spanTexto = document.createElement("span");
   spanTexto.textContent = tarea.texto;
   li.appendChild(spanTexto);
+  
 
   // Edicion de Texto
   spanTexto.addEventListener("dblclick", (e) => {
@@ -85,6 +86,40 @@ function renderizarTarea(tarea) {
     }
   });
 });
+
+const btnAgregarSubtarea = document.createElement("button");
+btnAgregarSubtarea.textContent = "+"
+btnAgregarSubtarea.classList.add("btn-subtarea")
+
+li.appendChild(btnAgregarSubtarea);
+
+btnAgregarSubtarea.addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  const textoSubtarea = prompt("Nueva subtarea:");
+  if(!textoSubtarea) return;
+
+  const textoLimpio = textoSubtarea.trim();
+  if (textoLimpio === "") return;
+
+  
+
+  let ulSubtareas = li.querySelector("ul.subtareas");
+
+  if(!ulSubtareas){
+    ulSubtareas = document.createElement("ul");
+    ulSubtareas.classList.add("subtareas");
+    li.appendChild(ulSubtareas)
+  }
+  
+  const liSub = document.createElement("li");
+  ulSubtareas.appendChild(liSub);
+  liSub.textContent = textoLimpio
+
+  actualizarEstado();
+})
+
+
 
 
   li.classList.toggle("completada", tarea.completada);
@@ -118,7 +153,22 @@ if (
   li.style.display = "none";
 }
 
-  list.appendChild(li);
+if(Array.isArray(tarea.subtareas) && tarea.subtareas.length > 0) {
+  const ulSubtareas = document.createElement("ul");
+  ulSubtareas.classList.add("subtareas")
+
+  tarea.subtareas.forEach(subtarea => {
+    const liSub = document.createElement("li");
+    liSub.textContent = subtarea.texto;
+
+    liSub.classList.toggle("completada", subtarea.completada);
+
+    ulSubtareas.appendChild(liSub);
+
+  });
+  li.appendChild(ulSubtareas);
+}
+list.appendChild(li);
 }
 
 
@@ -143,12 +193,30 @@ form.addEventListener("submit", (e) => {
 // Actualizar localStorage con las tareas actuales
 function actualizarEstado() {
   const tareas = [];
-  list.querySelectorAll("li").forEach(li => {
-    tareas.push({
-      texto: li.childNodes[0].textContent,
-      completada: li.classList.contains("completada")
-    });
-  });
+  Array.from(list.children).forEach(li =>{
+    const texto = li.querySelector("span")?.textContent || "";
+    const completada =  li.classList.contains("completada");
+
+    const tarea = {
+      texto,
+      completada
+    }
+
+    const ulSubtareas = li.querySelector("ul.subtareas");
+    if (ulSubtareas){
+      const subtareas = [];
+
+      ulSubtareas.querySelectorAll("li").forEach(liSub => {
+        subtareas.push({
+          texto: liSub.textContent,
+          completada: liSub.classList.contains("completada")
+        });
+      });
+      tarea.subtareas = subtareas;
+
+    }
+    tareas.push(tarea)
+  })
 
   localStorage.setItem("tareas", JSON.stringify(tareas));
 
