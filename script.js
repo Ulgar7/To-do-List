@@ -87,6 +87,7 @@ function renderizarTarea(tarea) {
   });
 });
 
+//  Botón para agregar una subtarea
 const btnAgregarSubtarea = document.createElement("button");
 btnAgregarSubtarea.textContent = "+"
 btnAgregarSubtarea.classList.add("btn-subtarea")
@@ -96,12 +97,9 @@ li.appendChild(btnAgregarSubtarea);
 btnAgregarSubtarea.addEventListener("click", (e) => {
   e.stopPropagation();
 
-  const textoSubtarea = prompt("Nueva subtarea:");
-  if(!textoSubtarea) return;
+  
 
-  const textoLimpio = textoSubtarea.trim();
-  if (textoLimpio === "") return;
-
+  if (li.querySelector(".nueva-subtarea")) return;
   
 
   let ulSubtareas = li.querySelector("ul.subtareas");
@@ -112,12 +110,79 @@ btnAgregarSubtarea.addEventListener("click", (e) => {
     li.appendChild(ulSubtareas)
   }
   
-  const liSub = document.createElement("li");
-  ulSubtareas.appendChild(liSub);
-  liSub.textContent = textoLimpio
+  const formSub = document.createElement("form");
+  formSub.classList.add("nueva-subtarea");
 
+  const inputSub = document.createElement("input");
+  inputSub.type = "text";
+  inputSub.placeholder = "Nueva subtarea...";
+  inputSub.autocomplete = "off";
+
+  formSub.appendChild(inputSub);
+  ulSubtareas.appendChild(formSub);
+
+  inputSub.focus();
+
+  let confirmando = false;
+  
+  formSub.addEventListener("submit", (e) =>{
+    e.preventDefault();
+    confirmando = true;
+
+    const textoLimpio = inputSub.value.trim();
+
+    setTimeout(() => {
+  if (formSub.isConnected) formSub.remove();
+});
+
+    if (textoLimpio === "") return;
+
+    const liSub = document.createElement("li");
+
+    const spanSub = document.createElement("span");
+    spanSub.textContent = textoLimpio;
+    liSub.appendChild(spanSub);
+
+    const btnEliminarSub = document.createElement("button");
+    btnEliminarSub.textContent = "X";
+    btnEliminarSub.classList.add("eliminar-subtarea");
+    
+
+    btnEliminarSub.addEventListener("click", (e) =>{
+      e.stopPropagation();
+      liSub.remove()
+      actualizarEstado()
+    });
+
+    liSub.appendChild(btnEliminarSub)
+
+    liSub.addEventListener("click", (e) => {
+    e.stopPropagation();
+    liSub.classList.toggle("completada");
+    actualizarEstado()
+
+  });
+  ulSubtareas.appendChild(liSub);
   actualizarEstado();
+  
 })
+
+inputSub.addEventListener("keydown", (e) => {
+  if(e.key === "Escape"){
+  setTimeout(() => {
+  if (formSub.isConnected) formSub.remove();
+});
+  }
+})
+inputSub.addEventListener("blur", () =>{
+  setTimeout(() => {
+  if (formSub.isConnected) formSub.remove();
+});
+})
+})
+  
+
+
 
 
 
@@ -127,7 +192,7 @@ btnAgregarSubtarea.addEventListener("click", (e) => {
   // Marcar como completada al hacer clic
   li.addEventListener("click", (e) => {
     if(li.querySelector("input"))return;
-
+    e.stopPropagation();
     li.classList.toggle("completada");
     actualizarEstado();
   });
@@ -159,9 +224,28 @@ if(Array.isArray(tarea.subtareas) && tarea.subtareas.length > 0) {
 
   tarea.subtareas.forEach(subtarea => {
     const liSub = document.createElement("li");
-    liSub.textContent = subtarea.texto;
+    const spanSubtarea = document.createElement("span");
+    spanSubtarea.textContent = subtarea.texto;
+    const btnEliminarSub = document.createElement("button");
+    btnEliminarSub.textContent = "X";
+    btnEliminarSub.classList.add("eliminar-subtarea");
+
+    liSub.appendChild(spanSubtarea)
+    liSub.appendChild(btnEliminarSub);
+
+    btnEliminarSub.addEventListener("click", (e) =>{
+      e.stopPropagation();
+      liSub.remove()
+      actualizarEstado()
+    });
 
     liSub.classList.toggle("completada", subtarea.completada);
+
+    liSub.addEventListener("click", (e) =>{
+      e.stopPropagation();
+      liSub.classList.toggle("completada");
+      actualizarEstado()
+    })
 
     ulSubtareas.appendChild(liSub);
 
@@ -208,7 +292,7 @@ function actualizarEstado() {
 
       ulSubtareas.querySelectorAll("li").forEach(liSub => {
         subtareas.push({
-          texto: liSub.textContent,
+          texto: liSub.querySelector("span")?.textContent || "",
           completada: liSub.classList.contains("completada")
         });
       });
