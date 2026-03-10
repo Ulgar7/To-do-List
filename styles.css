@@ -95,6 +95,18 @@ button:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  transition: all 0.5s ease;
+}
+
+.tarea-nueva{
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+.tarea-eliminando {
+  opacity: 0;
+  transform: translateX(30px) scale(0.95);
 }
 
 .subtareas{
@@ -136,9 +148,27 @@ button.eliminar {
   cursor: pointer;
 }
 
-/* button.eliminar-subtarea{
+button.eliminar:hover{
+  background-color: #d8674d;
+}
+
+button.eliminar-subtarea{
+  color: #ffffff;
+  margin-left: auto;
+  font-size: 8px;
+  padding: 8px;
+}
+
+button.eliminar-subtarea:hover{
   color: #1e1e1e;
-} */
+}
+
+.btn-subtarea{
+  color: #ffffff;
+  padding: 0.20rem 0.30rem;
+  margin-left: 4px;
+  margin-right: 4px;
+}
 
 #filtros {
   margin-bottom: 1rem;
@@ -234,7 +264,7 @@ body.dark #task-list {
 }
 
 body.dark button{
-  background-color: #f4a261;
+  background-color: #ffffff;
   color: #1e1e1e;
 }
 

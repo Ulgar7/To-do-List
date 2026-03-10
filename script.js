@@ -52,6 +52,7 @@ function renderizarTodasLasTareas() {
 // Función para renderizar una tarea en la lista
 function renderizarTarea(tarea) {
   const li = document.createElement("li");
+  li.classList.add("tarea-nueva")
   const spanTexto = document.createElement("span");
   spanTexto.textContent = tarea.texto;
   li.appendChild(spanTexto);
@@ -203,8 +204,19 @@ inputSub.addEventListener("blur", () =>{
   botonEliminar.classList.add("eliminar");
   botonEliminar.addEventListener("click", (e) => {
     e.stopPropagation(); // para que no se active el toggle de completado
-    li.remove();
-    actualizarEstado();
+    
+    
+    li.classList.add("tarea-eliminando");
+    
+    li.addEventListener("transitionend", () => {
+      li.remove();
+      actualizarEstado();
+    }, {once: true})
+
+    
+
+    // li.remove();
+    // actualizarEstado();
   });
 
   li.appendChild(botonEliminar);
@@ -253,6 +265,10 @@ if(Array.isArray(tarea.subtareas) && tarea.subtareas.length > 0) {
   li.appendChild(ulSubtareas);
 }
 list.appendChild(li);
+
+requestAnimationFrame(()=> {
+  li.classList.remove("tarea-nueva")
+})
 }
 
 
